@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyfg"
+version = "0.50"
+dependencies = [
+    "paramiko",
+]
+requires-python = ">= 3.6"
+authors = [
+    {name = "XNET", email = "lindblom+pyfg@spotify.com"}
+]
+maintainers = [
+    {name = "Raphael Dietrich"}
+]
+description = "Python API for Fortigate"
+readme = "README.md"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/xXKnightRiderXx/pyfg"
