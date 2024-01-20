@@ -1,8 +1,5 @@
 # coding=utf-8
-from __future__ import unicode_literals
-
 from pyFG.forticonfig import FortiConfig
-from pyFG import py23_compat
 from pyFG import exceptions
 
 
@@ -117,7 +114,7 @@ class FortiOS(object):
         if isinstance(data, int):
             data = chr(data)
         # Ensure unicode
-        return py23_compat.text_type(data)
+        return str(data)
 
     def execute_command(self, command):
         """
