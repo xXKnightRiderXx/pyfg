@@ -16,7 +16,7 @@ logger = logging.getLogger('pyFG')
 
 class FortiOS(object):
 
-    def __init__(self, hostname, vdom=None, username=None, password=None, keyfile=None, timeout=60):
+    def __init__(self, hostname, port=22, vdom=None, username=None, password=None, keyfile=None, timeout=60):
         """
         Represents a device running FortiOS.
 
@@ -35,6 +35,7 @@ class FortiOS(object):
 
         Args:
             * **hostname** (str) -- FQDN or IP of the device you want to connect.
+            * **port** (int) -- SSH port of the device you want to connect
             * **vdom** (str) -- VDOM you want to connect to. If it is None we will run the commands without moving\
                 to a VDOM.
             * **username** (str) -- Username to connect to the device. If none is specified the current user will be\
@@ -45,6 +46,7 @@ class FortiOS(object):
 
         """
         self.hostname = hostname
+        self.port = port
         self.vdom = vdom
         self.original_config = None
         self.running_config = FortiConfig('running', vdom=vdom)
@@ -74,6 +76,7 @@ class FortiOS(object):
 
         cfg = {
             'hostname': self.hostname,
+            'port' : self.port,
             'timeout': self.timeout,
             'username': self.username,
             'password': self.password,
@@ -96,6 +99,8 @@ class FortiOS(object):
                     cfg['key_filename'] = host_conf['identityfile']
                 if 'hostname' in host_conf:
                     cfg['hostname'] = host_conf['hostname']
+                if 'port' in host_conf:
+                    cfg['port'] = host_conf['port']
 
         self.ssh.connect(**cfg)
 
