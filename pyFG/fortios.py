@@ -147,15 +147,25 @@ class FortiOS(object):
 
         chan.exec_command(command)
 
-        error_chan = chan.makefile_stderr()
-        output_chan = chan.makefile()
-
-        error = ''
-        output = ''
-        for e in error_chan.read():
-            error = error + self._read_wrapper(e)
-        for o in output_chan.read():
-            output = output + self._read_wrapper(o)
+        stdout = io.BytesIO()
+        stderr = io.BytesIO()
+        while not chan.exit_status_ready():
+            # Only read from the channels if data is available to avoid running into timeouts as these functions block
+            if chan.recv_ready():
+                data = chan.recv(1024)
+                while data:
+                    stdout.write(data)
+                    data = chan.recv(1024)
+            if chan.recv_stderr_ready():
+                error_data = chan.recv_stderr(1024)
+                while error_data:
+                    stderr.write(error_data)
+                    error_data = chan.recv_stderr(1024)
+        # We perform the decode operation at the end to avoid situations where two byte Unicode characters are split
+        # over multiple receive windows
+        # Fortigate CLI uses UTF-8 encoding
+        error = stderr.getvalue().decode("utf-8")
+        output = stdout.getvalue().decode("utf-8")
 
         if len(error) > 0:
             msg = '%s %s:\n%s\n%s' % (err_msg, self.ssh.get_host_keys().keys()[0], command, error)
