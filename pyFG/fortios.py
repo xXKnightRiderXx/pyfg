@@ -114,15 +114,6 @@ class FortiOS(object):
         logger.debug('Closing connection to device %s' % self.hostname)
         self.ssh.close()
 
-    @staticmethod
-    def _read_wrapper(data):
-        """Ensure unicode always returned on read."""
-        # Paramiko (strangely) in PY3 returns an int here.
-        if isinstance(data, int):
-            data = chr(data)
-        # Ensure unicode
-        return str(data)
-
     def execute_command(self, command):
         """
         This method will execute the commands on the device without as if you were just connected to it (it will not
