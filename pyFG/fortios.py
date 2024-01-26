@@ -66,6 +66,14 @@ class FortiOS(object):
                                              'diffie-hellman-group1-sha1',
                                              )
         
+    # Enter an Exit allow the class to be used with context managers
+    def __enter__(self):
+        self.open()
+        return self
+    
+    def __exit__(self):
+        self.close()
+
     def open(self):
         """
         Opens the ssh session with the device.
