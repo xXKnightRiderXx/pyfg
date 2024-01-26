@@ -171,16 +171,16 @@ class FortiOS(object):
 
         output = output.splitlines()
 
-        # We look for the prompt and remove it
-        i = 0
-        for line in output:
-            current_line = line.split('#')
-
-            if len(current_line) > 1:
-                output[i] = current_line[1]
+        # Search for the prompt and remove it if found
+        prompt_regex = re.compile("^\S+(?:\s\S+)?\s#\s")
+        for number, line in enumerate(output):
+            prompt_match = prompt_regex.match(line)
+            if prompt_match is None:
+                continue
             else:
-                output[i] = current_line[0]
-            i += 1
+                # we use maxsplit=1 here because we only want to remove the prompt.
+                # If there are other # present they are not relevant for us
+                output[number] = line.split(" # ", maxsplit=1)[1]
 
         return output[:-1]
 
