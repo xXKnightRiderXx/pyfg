@@ -263,7 +263,6 @@ class FortiConfig(object):
             - **param** (string): Parameter name you want to set
             - **value** (string): Value you want to set
         """
-
         self.parameters[param] = str(value)
 
     def del_param(self, param):
@@ -290,6 +289,16 @@ class FortiConfig(object):
             - **path** (string) - The path you want to set, for example 'system interfaces' or 'router bgp'.
         """
         self.paths.append(path)
+
+    def set_block(self, block):
+        """
+        Add a complete configuration block to the current object
+
+        Args:
+            - **block** (:class:`~pyFG.forticonfig.FortiConfig`): Configuration Block that you want to add as a sub block
+        """
+        block.set_parent(self)
+        self[block.get_name()] = block
 
     def del_block(self, block_name):
         """
