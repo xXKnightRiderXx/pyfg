@@ -6,23 +6,20 @@
 from pyFG import FortiOS
 import sys
 
-if __name__ == '__main__':
-    f = open('candidate.conf', 'r')
-    candidate = f.read()
-    f.close()
+if __name__ == "__main__":
+    with open("candidate.conf", "r") as f:
+        candidate = f.read()
 
     hostname = sys.argv[1]
 
-    d = FortiOS(hostname, vdom='vpn')
+    d = FortiOS(hostname, vdom="vpn")
     d.open()
-    d.load_config('router bgp', empty_candidate=True)
+    d.load_config("router bgp", empty_candidate=True)
     d.load_config(config_text=candidate, in_candidate=True)
     d.close()
 
-    print "This is the diff of the conigs:"
-    for line in d.compare_config(text=True):
-        print line
-
-    print "\n\n"
-    print "This is how to reach the desired state:"
-    print d.compare_config()
+    print("This is the diff of the configs:")
+    print(d.compare_config(text=True))
+    print("--------------------")
+    print("This is how to reach the desired state:")
+    print(d.compare_config())

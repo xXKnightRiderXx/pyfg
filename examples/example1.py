@@ -4,12 +4,11 @@
 from pyFG import FortiOS
 import sys
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     hostname = sys.argv[1]
 
-    d = FortiOS(hostname, vdom='vpn')
+    d = FortiOS(hostname, vdom="vpn")
     d.open()
-    d.load_config('router bgp')
+    d.load_config("router bgp")
     d.close()
-    print d.running_config.to_text()
+    print(d.running_config.to_text())
