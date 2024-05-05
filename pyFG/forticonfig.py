@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 
 class FortiConfig(object):
+
     def __init__(self, name='', config_type='', parent=None, vdom=None):
         """
         This object represents a block of config. For example::
@@ -16,7 +17,6 @@ class FortiConfig(object):
                     set snmp-index 1
                 next
             end
-
 
         It can contain parameters and sub_blocks.
 
@@ -34,21 +34,21 @@ class FortiConfig(object):
         self.vdom = vdom
         self.paths = list()
 
-        if config_type == 'edit':
-            self.rel_path_fwd = 'edit %s\n' % name
-            self.rel_path_bwd = 'next\n'
-        elif config_type == 'config':
-            self.rel_path_fwd = 'config %s\n' % name
-            self.rel_path_bwd = 'end\n'
+        if config_type == "edit":
+            self.rel_path_fwd = f"edit {name}\n"
+            self.rel_path_bwd = "next\n"
+        elif config_type == "config":
+            self.rel_path_fwd = f"config {name}\n"
+            self.rel_path_bwd = "end\n"
 
         if self.parent is None:
-            self.rel_path_fwd = ''
-            self.rel_path_bwd = ''
+            self.rel_path_fwd = ""
+            self.rel_path_bwd = ""
             self.full_path_fwd = self.rel_path_fwd
             self.full_path_bwd = self.rel_path_bwd
         else:
-            self.full_path_fwd = '%s%s' % (self.get_parent().full_path_fwd, self.rel_path_fwd)
-            self.full_path_bwd = '%s%s' % (self.rel_path_bwd, self.get_parent().full_path_bwd)
+            self.full_path_fwd = f"{self.get_parent().full_path_fwd}{self.rel_path_fwd}"
+            self.full_path_bwd = f"{self.rel_path_bwd}{self.get_parent().full_path_bwd}"
 
         self.sub_blocks = OrderedDict()
         self.new_sub_blocks = OrderedDict()
@@ -56,10 +56,10 @@ class FortiConfig(object):
         self.new_parameters = dict()
 
     def __repr__(self):
-        return 'Config Block: %s' % self.get_name()
+        return f"Config Block: {self.get_name()}"
 
     def __str__(self):
-        return '%s %s' % (self.config_type, self.name)
+        return f"{self.config_type} {self.name}"
 
     def __getitem__(self, item):
         """
@@ -118,44 +118,44 @@ class FortiConfig(object):
             fwd = self.rel_path_fwd
             bwd = self.rel_path_bwd
 
-        indent = 4*indent_level*' '
+        indent = 4 * indent_level * " "
 
         if indent_level == 0 and self.vdom is not None:
-            if self.vdom == 'global':
-                pre = 'conf global\n'
+            if self.vdom == "global":
+                pre = "config global\n"
             else:
-                pre = 'conf vdom\n  edit %s\n' % self.vdom
-            post = 'end'
+                pre = f"config vdom\n  edit {self.vdom}\n"
+            post = "end"
         else:
-            pre = ''
-            post = ''
+            pre = ""
+            post = ""
 
-        pre_block = '%s%s' % (indent, fwd)
-        post_block = '%s%s' % (indent, bwd)
+        pre_block = f"{indent}{fwd}"
+        post_block = f"{indent}{bwd}"
 
         my_params = self.parameters.keys()
         ot_params = target.parameters.keys()
 
-        text = ''
+        text = ""
 
         for param in my_params:
             if param not in ot_params:
-                text += '  %sunset %s\n' % (indent, param)
+                text += f"  {indent}unset {param}\n"
             else:
                 # We ignore quotes when comparing values
                 if str(self.get_param(param)).replace('"', '') != str(target.get_param(param)).replace('"', ''):
-                    text += '  %sset %s %s\n' % (indent, param, target.get_param(param))
+                    text += f"  {indent}set {param} {target.get_param(param)}\n"
 
         for param in ot_params:
             if param not in my_params:
-                text += '  %sset %s %s\n' % (indent, param, target.get_param(param))
+                text += f"  {indent}set {param} {target.get_param(param)}\n"
 
         my_blocks = self.sub_blocks.keys()
         ot_blocks = target.sub_blocks.keys()
 
         for block_name in my_blocks:
             if block_name not in ot_blocks:
-                text += "    %sdelete %s\n" % (indent, block_name)
+                text += f"    {indent}delete {block_name}\n"
             else:
                 text += self[block_name].compare_config(target[block_name], False, indent_level+1)
 
@@ -163,10 +163,10 @@ class FortiConfig(object):
             if block_name not in my_blocks:
                 text += target[block_name].to_text(True, indent_level+1, True)
 
-        if text == '':
-            return ''
+        if text == "":
+            return ""
         else:
-            return '%s%s%s%s%s' % (pre, pre_block, text, post_block, post)
+            return f"{pre}{pre_block}{text}{post_block}{post}"
 
     def iterparams(self):
         """
@@ -225,15 +225,15 @@ class FortiConfig(object):
         """
         self.parent = parent
 
-        if self.config_type == 'edit':
-            self.rel_path_fwd = 'edit %s\n' % self.get_name()
-            self.rel_path_bwd = 'next\n'
-        elif self.config_type == 'config':
-            self.rel_path_fwd = 'config %s\n' % self.get_name()
-            self.rel_path_bwd = 'end\n'
+        if self.config_type == "edit":
+            self.rel_path_fwd = f"edit {self.get_name()}\n"
+            self.rel_path_bwd = "next\n"
+        elif self.config_type == "config":
+            self.rel_path_fwd = f"config {self.get_name()}\n"
+            self.rel_path_bwd = "end\n"
 
-        self.full_path_fwd = '%s%s' % (self.get_parent().full_path_fwd, self.rel_path_fwd)
-        self.full_path_bwd = '%s%s' % (self.rel_path_bwd, self.get_parent().full_path_bwd)
+        self.full_path_fwd = f"{self.get_parent().full_path_fwd}{self.rel_path_fwd}"
+        self.full_path_bwd = f"{self.rel_path_bwd}{self.get_parent().full_path_bwd}"
 
     def get_parent(self):
         """
@@ -330,19 +330,19 @@ class FortiConfig(object):
             fwd = self.full_path_fwd
             bwd = self.full_path_bwd
 
-        indent = 4*indent_level*' '
-        pre = '%s%s' % (indent, fwd)
-        post = '%s%s' % (indent, bwd)
+        indent = 4 * indent_level * " "
+        pre = f"{indent}{fwd}"
+        post = f"{indent}{bwd}"
 
-        text = ''
+        text = ""
         for param, value in self.iterparams():
-            text += '  %sset %s %s\n' % (indent, param, value)
+            text += f"  {indent}set {param} {value}\n"
 
         for key, block in self.iterblocks():
-            text += block.to_text(True, indent_level+1)
+            text += block.to_text(True, indent_level + 1)
 
         if len(text) > 0 or not clean_empty_block:
-            text = '%s%s%s' % (pre, text, post)
+            text = f"{pre}{text}{post}"
         return text
 
     def parse_config_output(self, output):
@@ -356,7 +356,7 @@ class FortiConfig(object):
         if isinstance(output, str):
             output = output.splitlines()
 
-        command_regex = re.compile('^(config |edit |set |end$|next$)(.*)')
+        command_regex = re.compile("^(config |edit |set |end$|next$)(.*)")
         current_block = self
         line_iterator = iter(output)
         # Use sentinel object to detect end of iterator without having to catch a StopException

@@ -11,7 +11,7 @@ from difflib import Differ
 
 import logging
 
-logger = logging.getLogger('pyFG')
+logger = logging.getLogger("pyFG")
 
 
 class FortiOS(object):
@@ -50,8 +50,8 @@ class FortiOS(object):
         self.port = port
         self.vdom = vdom
         self.original_config = None
-        self.running_config = FortiConfig('running', vdom=vdom)
-        self.candidate_config = FortiConfig('candidate', vdom=vdom)
+        self.running_config = FortiConfig("running", vdom=vdom)
+        self.candidate_config = FortiConfig("candidate", vdom=vdom)
         self.ssh = None
         self.username = username
         self.password = password
@@ -59,11 +59,11 @@ class FortiOS(object):
         self.timeout = timeout
         self.channel_timeout = channel_timeout
         
-        # Set key exchange explcitly to address known fortinet issue
-        paramiko.Transport._preferred_kex = ('diffie-hellman-group14-sha1',
-                                             'diffie-hellman-group-exchange-sha1',
-                                             'diffie-hellman-group-exchange-sha256',
-                                             'diffie-hellman-group1-sha1',
+        # Set key exchange explicitly to address known fortinet issue
+        paramiko.Transport._preferred_kex = ("diffie-hellman-group14-sha1",
+                                             "diffie-hellman-group-exchange-sha1",
+                                             "diffie-hellman-group-exchange-sha256",
+                                             "diffie-hellman-group1-sha1",
                                              )
         
     # Enter an Exit allow the class to be used with context managers
@@ -79,38 +79,38 @@ class FortiOS(object):
         Opens the ssh session with the device.
         """
 
-        logger.debug('Connecting to device %s, vdom %s' % (self.hostname, self.vdom))
+        logger.debug(f"Connecting to device {self.hostname}, vdom {self.vdom}")
 
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         cfg = {
-            'hostname': self.hostname,
-            'port' : self.port,
-            'timeout': self.timeout,
-            'username': self.username,
-            'password': self.password,
-            'key_filename': self.keyfile
+            "hostname": self.hostname,
+            "port" : self.port,
+            "timeout": self.timeout,
+            "username": self.username,
+            "password": self.password,
+            "key_filename": self.keyfile
         }
 
         if os.path.exists(os.path.expanduser("~/.ssh/config")):
             ssh_config = paramiko.SSHConfig()
             user_config_file = os.path.expanduser("~/.ssh/config")
-            with io.open(user_config_file, 'rt', encoding='utf-8') as f:
+            with open(user_config_file, "rt", encoding="utf-8") as f:
                 ssh_config.parse(f)
 
             host_conf = ssh_config.lookup(self.hostname)
             if host_conf:
-                if 'proxycommand' in host_conf:
-                    cfg['sock'] = paramiko.ProxyCommand(host_conf['proxycommand'])
-                if 'user' in host_conf:
-                    cfg['username'] = host_conf['user']
-                if 'identityfile' in host_conf:
-                    cfg['key_filename'] = host_conf['identityfile']
-                if 'hostname' in host_conf:
-                    cfg['hostname'] = host_conf['hostname']
-                if 'port' in host_conf:
-                    cfg['port'] = host_conf['port']
+                if "proxycommand" in host_conf:
+                    cfg["sock"] = paramiko.ProxyCommand(host_conf["proxycommand"])
+                if "user" in host_conf:
+                    cfg["username"] = host_conf["user"]
+                if "identityfile" in host_conf:
+                    cfg["key_filename"] = host_conf["identityfile"]
+                if "hostname" in host_conf:
+                    cfg["hostname"] = host_conf["hostname"]
+                if "port" in host_conf:
+                    cfg["port"] = host_conf["port"]
 
         self.ssh.connect(**cfg)
 
@@ -119,7 +119,7 @@ class FortiOS(object):
         Closes the ssh session with the device.
         """
 
-        logger.debug('Closing connection to device %s' % self.hostname)
+        logger.debug(f"Closing connection to device {self.hostname}")
         self.ssh.close()
 
     def execute_command(self, command):
@@ -137,9 +137,9 @@ class FortiOS(object):
         Raises:
             exceptions.CommandExecutionException -- If it detects any problem with the command.
         """
-        logger.debug('Executing commands:\n %s' % command)
+        logger.debug(f"Executing commands:\n {command}")
 
-        err_msg = 'Something happened when executing some commands on device'
+        err_msg = "Something happened when executing some commands on device"
 
         chan = self.ssh.get_transport().open_session()
         chan.settimeout(self.channel_timeout)
@@ -167,18 +167,17 @@ class FortiOS(object):
         output = stdout.getvalue().decode("utf-8")
 
         if len(error) > 0:
-            msg = '%s %s:\n%s\n%s' % (err_msg, self.ssh.get_host_keys().keys()[0], command, error)
+            msg = f"{err_msg} {self.ssh.get_host_keys().keys()[0]}:\n{command}\n{error}"
             logger.error(msg)
             raise exceptions.CommandExecutionException(msg)
 
-        regex = re.compile('Command fail')
+        regex = re.compile("Command fail")
         if len(regex.findall(output)) > 0:
-            msg = '%s %s:\n%s\n%s' % (err_msg, self.ssh.get_host_keys().keys()[0], command, output)
+            msg = f"{err_msg} {self.ssh.get_host_keys().keys()[0]}:\n{command}\n{output}"
             logger.error(msg)
             raise exceptions.CommandExecutionException(msg)
 
         output = output.splitlines()
-
         # Search for the prompt and remove it if found
         prompt_regex = re.compile("^\S+(?:\s\S+)?\s#\s")
         for number, line in enumerate(output):
@@ -192,7 +191,7 @@ class FortiOS(object):
 
         return output[:-1]
 
-    def load_config(self, path='', in_candidate=False, empty_candidate=False, config_text=None):
+    def load_config(self, path="", in_candidate=False, empty_candidate=False, config_text=None):
         """
         This method will load a block of config represented as a :py:class:`FortiConfig` object in the running
         config, in the candidate config or in both.
@@ -210,18 +209,16 @@ class FortiOS(object):
             * **config_text** (str) -- Instead of loading the config from the device itself (using the ``path``\
                 variable, you can specify here the config as text.
         """
-        logger.info('Loading config. path:%s, in_candidate:%s, empty_candidate:%s, config_text:%s' % (
-            path, in_candidate, empty_candidate, config_text is not None))
+        logger.info(f"Loading config. path:{path}, in_candidate:{in_candidate}, empty_candidate:{empty_candidate}, config_text:{config_text is not None}")
 
         if config_text is None:
             if self.vdom is not None:
-                if self.vdom == 'global':
-                    command = 'conf global\nshow %s\nend' % path
+                if self.vdom == "global":
+                    command = f"config global\nshow {path}\nend"
                 else:
-                    command = 'conf vdom\nedit %s\nshow %s\nend' % (self.vdom, path)
+                    command = f"config vdom\nedit {self.vdom}\nshow {path}\nend"
             else:
-                command = 'show %s' % path
-
+                command = f"show {path}"
             config_text = self.execute_command(command)
 
         if not in_candidate:
@@ -263,7 +260,7 @@ class FortiOS(object):
                 self.running_config.to_text().splitlines(),
                 other.to_text().splitlines()
             )
-            return '\n'.join(result)
+            return "\n".join(result)
 
     def commit(self, config_text=None, force=False):
         """
@@ -289,7 +286,7 @@ class FortiOS(object):
     def _commit(self, config_text=None, force=False, reload_original_config=True):
         """
         This method is the same as the :py:method:`commit`: method, however, it has an extra command that will trigger
-        the reload of the running config. The reason behind this is that in some circumstances you don´ want
+        the reload of the running config. The reason behind this is that in some circumstances you don´t want
         to reload the running config, for example, when doing a rollback.
 
         See :py:method:`commit`: for more details.
@@ -301,24 +298,23 @@ class FortiOS(object):
             config_vdom = ""
 
             if self.vdom is None:
-                pre = ''
-            elif not 'global' in self.vdom:
-                config_vdom = 'conf vdom\n  edit %s\n' % self.vdom
-                pre = 'conf global\n    '
+                pre = ""
+            elif not "global" in self.vdom:
+                config_vdom = f"config vdom\n  edit {self.vdom}\n"
+                pre = "config global\n    "
             else:
-                pre = 'conf global\n    '
+                pre = "config global\n    "
 
-            cmd = '%sexecute batch start\n' % pre
+            cmd = f"{pre}execute batch start\n"
             cmd += config_vdom
             cmd += config_text
-            cmd += '\nexecute batch end\n'
+            cmd += "\nexecute batch end\n"
 
             self.execute_command(cmd)
-            last_log = self.execute_command('%sexecute batch lastlog' % pre)
-
+            last_log = self.execute_command(f"{pre}execute batch lastlog")
             return self._parse_batch_lastlog(last_log)
 
-        logger.info('Committing config ')
+        logger.info("Committing config ")
 
         wrong_commands = _execute(config_text)
 
@@ -338,7 +334,7 @@ class FortiOS(object):
 
         if len(wrong_commands) > 0:
             exit_code = -2
-            logging.debug('List of commands that failed: %s' % wrong_commands)
+            logging.debug(f"List of commands that failed: {wrong_commands}")
 
             if not force:
                 exit_code = -1
@@ -351,7 +347,7 @@ class FortiOS(object):
         """
         It will rollback all changes and go to the *original_config*
         """
-        logger.info('Rolling back changes')
+        logger.info("Rolling back changes")
 
         config_text = self.compare_config(other=self.original_config)
 
@@ -369,7 +365,7 @@ class FortiOS(object):
         Returns:
             A list of tuples that went wrong. The tuple will contain (*status_code*, *command*)
         """
-        regexp = re.compile('(-?[0-9]\d*):\W+(.*)')
+        regexp = re.compile("(-?[0-9]\d*):\W+(.*)")
 
         wrong_commands = list()
         for line in last_log:
@@ -395,11 +391,11 @@ class FortiOS(object):
         # We don't want to reload the config under some circumstances
         if reload_original_config:
             self.original_config = self.running_config
-            self.original_config.set_name('original')
+            self.original_config.set_name("original")
 
         paths = self.running_config.get_paths()
 
-        self.running_config = FortiConfig('running', vdom=self.vdom)
+        self.running_config = FortiConfig("running", vdom=self.vdom)
 
         for path in paths:
             self.load_config(path, empty_candidate=True)
