@@ -1,40 +1,39 @@
-PyFG
-====
+# PyFG
 
-PyFG is a Python (2.7 tested, may work on other versions) package.
+PyFG is a Python 3.8+ package that allows you to interact with the configuration of a Fortigate firewall.
 
-API for FortiOS or how to turn FortiOS into JunOS
+Quote from the original project: "API for FortiOS or how to turn FortiOS into JunOS"
 
-Introduction
-============
+## Introduction
 
-This API allows you to interact with a device runnine FortiOS in a sane way. With this API you can:
+This API allows you to interact with a device running FortiOS in a sane way. With this API you can:
 
-* Connect to the device, retrieve the running config (the entire config or some blocks, whatever you want) and build a model
+* Connect to the device, retrieve the running configuration (either the entire config or just some blocks) and build a model
 * Build the same model from a file
 * Do changes in the candidate configuration locally
 * Create a candidate configuration from a file
-* Do a diff between the running config and the local candidate config
+* Do a diff between the running configuration and the local candidate configuration
 * Generate the necessary commands to go from the running configuration to the candidate configuration
 
-Documentation
-=============
+## Documentation
 
 You can find the documentation on [Read the Docs](https://pyfg.readthedocs.io/en/latest/index.html).
 
-Installation
-============
+## Installation
 
-To install the library execute:
+To install the library clone the repository and install it with pip afterwards:
 
 ```
-pip install pyfg
+git clone https://github.com/xXKnightRiderXx/pyfg.git
+pip install ./pyfg/
 ```
 
-Examples
-========
+> [!NOTE]
+> This fork is currently not available on the python package index. Hence cloning and manually installing is necessary.
 
-In the examples directory you will find different file with examples on how to use the API:
+## Examples
+
+In the examples directory you will find different files with examples on how to use the API:
 
 * example1 - How to retrieve the configuration of a VDOM
 * example2 - How to get BGP information and navigate through it
